@@ -2,7 +2,11 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project: PALANTIR: THE GAME
+## Project: OPERATION BLACKWIRE
+
+Tagline: *You don't shoot. You decide.*
+
+GitHub: `colley-repos/operation-blackwire` — monorepo. Frontend lives in `palantir-game/`, future backend in `server/`.
 
 A browser-based intelligence game with a DEFCON/Palantir aesthetic — real-time geospatial threat tracking on a 3D globe with live signal feeds and player-driven intercept decisions.
 
