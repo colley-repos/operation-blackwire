@@ -1,0 +1,4 @@
+palantir-game/node_modules/
+palantir-game/dist/
+.env
+*.env.local

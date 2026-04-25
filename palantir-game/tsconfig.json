@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "lib": ["ES2022", "DOM"],
+    "outDir": "dist",
+    "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
+    "types": ["vite/client"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "paths": {
+      "@engine/*": ["src/engine/*"],
+      "@actors/*": ["src/actors/*"],
+      "@signals/*": ["src/signals/*"],
+      "@ui/*": ["src/ui/*"],
+      "@data/*": ["src/data/*"],
+      "@components/*": ["src/components/*"]
+    }
+  },
+  "include": ["src", "vite.config.ts"]
+}
