@@ -1,0 +1,7 @@
+.cesium-widget-credits,
+.cesium-viewer-toolbar,
+.cesium-viewer-animationContainer,
+.cesium-viewer-timelineContainer,
+.cesium-viewer-bottom { display: none !important; }
+
+#globe-container canvas { outline: none; }
