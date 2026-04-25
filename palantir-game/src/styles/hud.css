@@ -72,3 +72,27 @@
 .animate-pulse-threat { animation: pulse-threat 2s ease-in-out infinite; }
 .animate-pulse-ops    { animation: pulse-ops 2.5s ease-in-out infinite; }
 .animate-blink        { animation: blink 1.5s ease-in-out infinite; }
+
+.hud-meta-panel {
+  position: absolute;
+  top: 16px; right: 16px;
+  min-width: 200px;
+  padding-bottom: 12px;
+}
+.hud-counters { display: flex; flex-direction: column; gap: 4px; padding: 10px 12px 0; }
+.hud-stat { display: flex; justify-content: space-between; align-items: baseline; gap: 16px; }
+.hud-label { font-size: 10px; letter-spacing: 0.15em; color: var(--text-subtle); text-transform: uppercase; }
+.hud-value { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+.hud-val-ops    { color: var(--color-ops); }
+.hud-val-threat { color: var(--color-threat); }
+
+.objectives-panel { position: absolute; top: 16px; left: 16px; min-width: 220px; max-width: 260px; padding-bottom: 12px; }
+.objectives-list { list-style: none; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.objective-item { display: flex; align-items: flex-start; gap: 8px; font-size: 11px; line-height: 1.4; }
+.objective-bullet { color: var(--color-threat); flex-shrink: 0; }
+.objective-label  { color: var(--text-primary); }
+.objective-idle   { color: var(--text-subtle); font-style: italic; }
+.objective-complete .objective-label { text-decoration: line-through; color: var(--color-ops); }
+.objective-complete .objective-bullet { color: var(--color-ops); }
+.objective-failed .objective-label,
+.objective-failed .objective-bullet  { color: var(--text-subtle); }

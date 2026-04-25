@@ -1,0 +1,35 @@
+.intel-strip {
+  position: absolute;
+  bottom: 48px;
+  left: 0; right: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+  padding: 0 4px;
+  height: 180px;
+}
+.intel-panel { height: 100%; display: flex; flex-direction: column; overflow: hidden; }
+
+/* SIGINT */
+.sigint-body { flex: 1; overflow-y: auto; padding: 8px; font-size: 11px; line-height: 1.6; color: var(--color-ops); background: #000; }
+.sigint-line { margin-bottom: 2px; }
+.sigint-line.redacted { color: rgba(0,255,136,0.3); }
+.sigint-timestamp { color: rgba(0,255,136,0.5); margin-right: 6px; }
+
+/* Cam */
+.cam-body { flex: 1; background: #0a0a0a; display: flex; align-items: center; justify-content: center; position: relative; font-size: 11px; color: var(--text-subtle); }
+.cam-alert { position: absolute; bottom: 8px; left: 8px; right: 8px; background: rgba(255,56,56,0.15); border: 1px solid var(--color-threat); color: var(--color-threat); font-size: 11px; letter-spacing: 0.1em; padding: 4px 8px; text-align: center; display: none; }
+.cam-alert.visible { display: block; }
+
+/* Recon */
+.recon-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 12px; }
+.recon-status { font-size: 10px; letter-spacing: 0.18em; text-transform: uppercase; }
+.recon-status.standing-by { color: var(--color-ops); }
+.recon-status.on-mission  { color: var(--color-amber); }
+.recon-status.compromised { color: var(--color-threat); animation: pulse-threat 1s infinite; }
+
+/* Panel action buttons */
+.intel-action { display: block; width: calc(100% - 16px); margin: 0 8px 8px; padding: 8px; background: transparent; border: 1px solid var(--border-subtle); color: var(--text-subtle); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; min-height: 36px; }
+.intel-action:hover:not(:disabled) { border-color: var(--color-threat); color: var(--color-threat); background: rgba(255,56,56,0.06); }
+.intel-action.active { border-color: var(--color-ops); color: var(--color-ops); background: rgba(0,255,136,0.06); }
+.intel-action:disabled { opacity: 0.3; cursor: not-allowed; }

@@ -1,0 +1,24 @@
+.hover-preview { position: absolute; pointer-events: none; z-index: 40; min-width: 180px; max-width: 260px; padding-bottom: 8px; transition: opacity 0.15s; }
+.hover-preview.hidden { opacity: 0; }
+.hover-preview-body { padding: 8px 12px; font-size: 11px; display: flex; flex-direction: column; gap: 4px; }
+.hover-threat-badge { display: inline-block; padding: 1px 6px; font-size: 9px; letter-spacing: 0.12em; border: 1px solid currentColor; text-transform: uppercase; }
+.badge-low      { color: var(--color-ops); }
+.badge-medium   { color: var(--color-amber); }
+.badge-high, .badge-critical { color: var(--color-threat); }
+
+.detail-modal-backdrop { position: absolute; inset: 0; background: rgba(6,8,12,0.6); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; animation: fade-in 0.15s ease; }
+.detail-modal { width: min(520px, 95vw); max-height: 80vh; overflow-y: auto; padding-bottom: 16px; animation: slide-up 0.2s ease; }
+.detail-modal-header { padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); }
+.detail-modal-title { font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }
+.modal-close-btn { background: transparent; border: 1px solid var(--border-subtle); color: var(--text-subtle); font-family: var(--font-mono); font-size: 12px; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.15s; min-width: 28px; min-height: 28px; }
+.modal-close-btn:hover { border-color: var(--color-threat); color: var(--color-threat); }
+.detail-modal-body { padding: 16px; }
+.modal-stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--border-subtle); font-size: 12px; }
+.modal-stat-label { color: var(--text-subtle); letter-spacing: 0.08em; }
+.modal-stat-value { color: var(--text-primary); font-weight: 500; }
+.modal-action-row { display: flex; gap: 8px; margin-top: 16px; }
+.modal-action-btn { flex: 1; padding: 10px; background: transparent; border: 1px solid var(--color-threat); color: var(--color-threat); font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; cursor: pointer; transition: all 0.15s; min-height: 44px; }
+.modal-action-btn:hover { background: rgba(255,56,56,0.1); }
+
+@keyframes fade-in  { from { opacity: 0; } }
+@keyframes slide-up { from { transform: translateY(20px); opacity: 0; } }

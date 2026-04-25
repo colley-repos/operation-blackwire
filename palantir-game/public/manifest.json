@@ -1,0 +1,13 @@
+{
+  "name": "OPERATION BLACKWIRE",
+  "short_name": "BLACKWIRE",
+  "description": "Global intelligence operations — You don't shoot. You decide.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#06080C",
+  "theme_color": "#06080C",
+  "orientation": "landscape",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
