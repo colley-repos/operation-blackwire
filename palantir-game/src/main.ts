@@ -1,4 +1,5 @@
 import './styles/global.css'
+import { RegionHighlighter } from './signals/RegionHighlighter'
 import './styles/hud.css'
 import './styles/globe.css'
 import './styles/intel-panels.css'
@@ -32,6 +33,9 @@ app.innerHTML = `
 
 const world = new World()
 world.init(document.getElementById('globe-container')!)
+
+const regions = new RegionHighlighter()
+regions.init(world)
 
 for (const city of CITIES) {
   world.spawnActor(new CityMarker(city))
