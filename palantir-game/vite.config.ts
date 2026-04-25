@@ -1,19 +1,22 @@
 import { defineConfig } from 'vitest/config'
-import { viteStaticCopy } from 'vite-plugin-static-copy'
+import { cpSync } from 'fs'
+import { resolve } from 'path'
+
+const cesiumSrc = resolve(__dirname, 'node_modules/cesium/Build/Cesium')
+
+const copyCesiumAssets = {
+  name: 'copy-cesium-assets',
+  closeBundle() {
+    for (const dir of ['Workers', 'Assets', 'ThirdParty', 'Widgets']) {
+      cpSync(`${cesiumSrc}/${dir}`, `dist/cesium/${dir}`, { recursive: true })
+    }
+  }
+}
 
 export default defineConfig({
-  plugins: [
-    viteStaticCopy({
-      targets: [
-        { src: 'node_modules/cesium/Build/Cesium/Workers', dest: '' },
-        { src: 'node_modules/cesium/Build/Cesium/ThirdParty', dest: '' },
-        { src: 'node_modules/cesium/Build/Cesium/Assets', dest: '' },
-        { src: 'node_modules/cesium/Build/Cesium/Widgets', dest: '' },
-      ]
-    })
-  ],
+  plugins: [copyCesiumAssets],
   define: {
-    CESIUM_BASE_URL: JSON.stringify('')
+    CESIUM_BASE_URL: JSON.stringify('/cesium/')
   },
   test: {
     environment: 'jsdom'
