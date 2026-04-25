@@ -1,0 +1,74 @@
+.hud {
+  background: linear-gradient(#141C2899, #0A0E1499);
+  border: 1px solid var(--border-subtle);
+  border-radius: 2px;
+  backdrop-filter: blur(8px);
+  position: relative;
+  transition: border-color 0.2s;
+}
+.hud:hover { border-color: rgba(255,56,56,0.3); }
+
+.hud::before, .hud::after, .hud > .corner-bl, .hud > .corner-br {
+  content: '';
+  pointer-events: none;
+  border: 0 solid rgba(255,255,255,0.55);
+  width: 10px; height: 10px;
+  position: absolute;
+}
+.hud::before  { border-top-width: 1px; border-left-width:  1px; top: -1px; left:  -1px; }
+.hud::after   { border-top-width: 1px; border-right-width: 1px; top: -1px; right: -1px; }
+.hud > .corner-bl { border-bottom-width: 1px; border-left-width:  1px; bottom: -1px; left:  -1px; }
+.hud > .corner-br { border-bottom-width: 1px; border-right-width: 1px; bottom: -1px; right: -1px; }
+
+.hud-threat::before, .hud-threat::after,
+.hud-threat > .corner-bl, .hud-threat > .corner-br { border-color: var(--color-threat); }
+
+.hud-ops::before, .hud-ops::after,
+.hud-ops > .corner-bl, .hud-ops > .corner-br { border-color: var(--color-ops); }
+
+.hud-amber::before, .hud-amber::after,
+.hud-amber > .corner-bl, .hud-amber > .corner-br { border-color: var(--color-amber); }
+
+.hud-meta {
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+  background: rgba(255,255,255,0.03);
+  border-bottom: 1px solid var(--border-subtle);
+  padding: 6px 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.glow-threat { box-shadow: 0 0 24px #FF383866; }
+.glow-ops    { box-shadow: 0 0 24px #00FF884D; }
+.glow-amber  { box-shadow: 0 0 24px #FFB8004D; }
+
+.scan-overlay { position: relative; overflow: hidden; }
+.scan-overlay::after {
+  content: '';
+  pointer-events: none;
+  z-index: 1;
+  background: repeating-linear-gradient(rgba(255,255,255,0.04) 0 1px, transparent 1px 3px);
+  position: absolute;
+  inset: 0;
+}
+
+@keyframes pulse-threat {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 #FF383899; }
+  50%       { opacity: 0.85; box-shadow: 0 0 20px #FF383899; }
+}
+@keyframes pulse-ops {
+  0%, 100% { opacity: 1; box-shadow: 0 0 0 #00FF8880; }
+  50%       { opacity: 0.85; box-shadow: 0 0 20px #00FF8880; }
+}
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+
+.animate-pulse-threat { animation: pulse-threat 2s ease-in-out infinite; }
+.animate-pulse-ops    { animation: pulse-ops 2.5s ease-in-out infinite; }
+.animate-blink        { animation: blink 1.5s ease-in-out infinite; }
