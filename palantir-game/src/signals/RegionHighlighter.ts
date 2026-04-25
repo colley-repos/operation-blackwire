@@ -1,81 +1,167 @@
 import * as Cesium from 'cesium'
 import type { World } from '../engine/World'
 
-// Nations classified as hostile based on game context
+// ── Faction classification ────────────────────────────────────
 const HOSTILE_ISO2 = new Set([
   'RU', 'CN', 'IR', 'KP', 'SY', 'BY', 'LY', 'SD', 'YE', 'AF', 'IQ', 'VE', 'CU', 'MM', 'ZW',
 ])
 
-const FILL_HOSTILE_DIM    = Cesium.Color.RED.withAlpha(0.04)
-const FILL_HOSTILE_HOVER  = Cesium.Color.RED.withAlpha(0.18)
-const FILL_FRIENDLY_DIM   = Cesium.Color.fromCssColorString('#00FF88').withAlpha(0.03)
-const FILL_FRIENDLY_HOVER = Cesium.Color.fromCssColorString('#00FF88').withAlpha(0.14)
-const OUTLINE_HOSTILE     = Cesium.Color.RED.withAlpha(0.35)
-const OUTLINE_FRIENDLY    = Cesium.Color.fromCssColorString('#00FF88').withAlpha(0.18)
+// ── Visual tuning ─────────────────────────────────────────────
+const FRIENDLY_OUTLINE_ALPHA = 1.0
+const HOSTILE_OUTLINE_ALPHA  = 1.0
+const SELECTION_WIDTH_PX     = 6
+const BASE_BORDER_ALPHA      = 0.18
+const BASE_BORDER_WIDTH_PX   = 1
+// ──────────────────────────────────────────────────────────────
+
+const OUTLINE_HOSTILE  = Cesium.Color.RED.withAlpha(HOSTILE_OUTLINE_ALPHA)
+const OUTLINE_FRIENDLY = Cesium.Color.fromCssColorString('#00FF88').withAlpha(FRIENDLY_OUTLINE_ALPHA)
+const BASE_BORDER      = Cesium.Color.WHITE.withAlpha(BASE_BORDER_ALPHA)
 
 const GEOJSON_URL = 'https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson'
+
+interface Region {
+  entity: Cesium.Entity
+  positions: Cesium.Cartesian3[]
+  bbox: { minLon: number; maxLon: number; minLat: number; maxLat: number }
+  hostile: boolean
+}
 
 function isHostile(entity: Cesium.Entity): boolean {
   const iso = entity.properties?.['ISO_A2']?.getValue(Cesium.JulianDate.now()) as string | undefined
   return HOSTILE_ISO2.has(iso ?? '')
 }
 
-function styleEntity(entity: Cesium.Entity, hovered: boolean): void {
-  if (!entity.polygon) return
-  const hostile = isHostile(entity)
-  entity.polygon.material = new Cesium.ColorMaterialProperty(
-    hovered
-      ? (hostile ? FILL_HOSTILE_HOVER : FILL_FRIENDLY_HOVER)
-      : (hostile ? FILL_HOSTILE_DIM  : FILL_FRIENDLY_DIM)
-  )
-  entity.polygon.outlineColor = new Cesium.ConstantProperty(
-    hostile ? OUTLINE_HOSTILE : OUTLINE_FRIENDLY
-  )
+function isValidPositions(positions: Cesium.Cartesian3[]): boolean {
+  if (positions.length < 3) return false
+  return positions.every(p => {
+    return isFinite(p.x) && isFinite(p.y) && isFinite(p.z) &&
+      (Math.abs(p.x) + Math.abs(p.y) + Math.abs(p.z)) > 0.01
+  })
+}
+
+function computeBBox(positions: Cesium.Cartesian3[]) {
+  let minLon = Infinity, maxLon = -Infinity, minLat = Infinity, maxLat = -Infinity
+  for (const pos of positions) {
+    const c = Cesium.Cartographic.fromCartesian(pos)
+    const lon = Cesium.Math.toDegrees(c.longitude)
+    const lat = Cesium.Math.toDegrees(c.latitude)
+    if (lon < minLon) minLon = lon
+    if (lon > maxLon) maxLon = lon
+    if (lat < minLat) minLat = lat
+    if (lat > maxLat) maxLat = lat
+  }
+  return { minLon, maxLon, minLat, maxLat }
 }
 
 export class RegionHighlighter {
-  private dataSource: Cesium.GeoJsonDataSource | null = null
-  private hovered: Cesium.Entity | null = null
+  private viewer!: Cesium.Viewer
+  private regions: Region[] = []
+  private selected: Region | null = null
+  private selectionOutline: Cesium.GroundPolylinePrimitive | null = null
   private handler: Cesium.ScreenSpaceEventHandler | null = null
 
   async init(world: World): Promise<void> {
-    const viewer = world.getViewer()
+    this.viewer = world.getViewer()
 
+    let dataSource: Cesium.GeoJsonDataSource
     try {
-      this.dataSource = await Cesium.GeoJsonDataSource.load(GEOJSON_URL, {
+      dataSource = await Cesium.GeoJsonDataSource.load(GEOJSON_URL, {
         stroke: Cesium.Color.TRANSPARENT,
         fill: Cesium.Color.TRANSPARENT,
-        strokeWidth: 1,
-        clampToGround: true,
       })
-      await viewer.dataSources.add(this.dataSource)
-
-      for (const entity of this.dataSource.entities.values) {
-        if (!entity.polygon) continue
-        entity.polygon.outline = new Cesium.ConstantProperty(true)
-        entity.polygon.outlineWidth = new Cesium.ConstantProperty(1)
-        entity.polygon.heightReference = new Cesium.ConstantProperty(Cesium.HeightReference.CLAMP_TO_GROUND)
-        styleEntity(entity, false)
-      }
-    } catch {
-      return // Gracefully skip if GeoJSON unavailable
+      await this.viewer.dataSources.add(dataSource)
+    } catch (e) {
+      console.warn('[region] GeoJSON load failed', e)
+      return
     }
 
-    this.handler = new Cesium.ScreenSpaceEventHandler(viewer.canvas)
-    this.handler.setInputAction((e: { endPosition: Cesium.Cartesian2 }) => {
-      const picked = viewer.scene.pick(e.endPosition)
-      const entity = picked?.id instanceof Cesium.Entity ? picked.id : null
+    const borderInstances: Cesium.GeometryInstance[] = []
 
-      if (entity === this.hovered) return
+    for (const entity of dataSource.entities.values) {
+      const hierarchy = entity.polygon?.hierarchy?.getValue(Cesium.JulianDate.now()) as Cesium.PolygonHierarchy | undefined
+      const positions = hierarchy?.positions
+      if (!positions || !isValidPositions(positions)) continue
 
-      if (this.hovered) styleEntity(this.hovered, false)
-      this.hovered = entity && entity.polygon ? entity : null
-      if (this.hovered) styleEntity(this.hovered, true)
-    }, Cesium.ScreenSpaceEventType.MOUSE_MOVE)
+      const bbox = computeBBox(positions)
+      const hostile = isHostile(entity)
+
+      // Hide entity polygon — we render via GroundPolylinePrimitive only
+      if (entity.polygon) {
+        entity.polygon.show = new Cesium.ConstantProperty(false)
+      }
+
+      this.regions.push({ entity, positions, bbox, hostile })
+
+      // Add to grey border batch
+      borderInstances.push(new Cesium.GeometryInstance({
+        geometry: new Cesium.GroundPolylineGeometry({ positions, width: BASE_BORDER_WIDTH_PX }),
+        attributes: { color: Cesium.ColorGeometryInstanceAttribute.fromColor(BASE_BORDER) },
+      }))
+    }
+
+    console.log('[region] loaded', this.regions.length, 'regions')
+
+    // Single batched primitive for all grey borders
+    if (borderInstances.length) {
+      this.viewer.scene.primitives.add(new Cesium.GroundPolylinePrimitive({
+        geometryInstances: borderInstances,
+        appearance: new Cesium.PolylineColorAppearance(),
+      }))
+    }
+
+    this.handler = new Cesium.ScreenSpaceEventHandler(this.viewer.canvas)
+    this.handler.setInputAction((e: { position: Cesium.Cartesian2 }) => {
+      const cartesian = this.viewer.camera.pickEllipsoid(e.position, this.viewer.scene.globe.ellipsoid)
+      if (!cartesian) { this.clearSelection(); return }
+
+      const carto = Cesium.Cartographic.fromCartesian(cartesian)
+      const lon = Cesium.Math.toDegrees(carto.longitude)
+      const lat = Cesium.Math.toDegrees(carto.latitude)
+
+      const match = this.regions.find(r =>
+        lon >= r.bbox.minLon && lon <= r.bbox.maxLon &&
+        lat >= r.bbox.minLat && lat <= r.bbox.maxLat
+      ) ?? null
+
+      if (match === this.selected) return
+      this.clearSelection()
+      if (match) this.applySelection(match)
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK)
   }
 
-  destroy(world: World): void {
+  private clearSelection(): void {
+    if (this.selectionOutline) {
+      this.viewer.scene.primitives.remove(this.selectionOutline)
+      this.selectionOutline = null
+    }
+    this.selected = null
+  }
+
+  private applySelection(region: Region): void {
+    this.selected = region
+
+    // GroundPolylinePrimitive — real pixel width, instant, no translucent sort
+    const color = region.hostile ? OUTLINE_HOSTILE : OUTLINE_FRIENDLY
+    this.selectionOutline = new Cesium.GroundPolylinePrimitive({
+      geometryInstances: new Cesium.GeometryInstance({
+        geometry: new Cesium.GroundPolylineGeometry({
+          positions: region.positions,
+          width: SELECTION_WIDTH_PX,
+        }),
+        attributes: { color: Cesium.ColorGeometryInstanceAttribute.fromColor(color) },
+      }),
+      appearance: new Cesium.PolylineColorAppearance(),
+    })
+    this.viewer.scene.primitives.add(this.selectionOutline)
+  }
+
+  setFaction(_faction: 'east' | 'west'): void {
+    // TODO: reclassify HOSTILE_ISO2 based on faction, re-apply to selected
+  }
+
+  destroy(): void {
     this.handler?.destroy()
-    if (this.dataSource) world.getViewer().dataSources.remove(this.dataSource)
+    if (this.selectionOutline) this.viewer.scene.primitives.remove(this.selectionOutline)
   }
 }
