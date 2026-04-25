@@ -30,8 +30,8 @@ export class World {
     this.viewer.scene.globe.enableLighting = true
 
     this.viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(55.0, 45.0, 8_000_000),
-      orientation: { heading: 0, pitch: -0.6, roll: 0 }
+      destination: Cesium.Cartesian3.fromDegrees(45.0, 40.0, 14_000_000),
+      orientation: { heading: 0, pitch: -Math.PI / 3, roll: 0 }
     })
 
     this.startTick()
